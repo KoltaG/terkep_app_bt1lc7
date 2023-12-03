@@ -9,103 +9,127 @@ import {
 } from "react-native";
 import MapViewGestures from "@dev-event/react-native-maps-draw";
 import MapView, { Polygon, Marker } from "react-native-maps";
-import MenuCard from "../../components/menu-card";
-//import type {TTouchPoint} from "@dev-event/react-native-maps-draw"
+import MenuCard from "../../components/menuCard";
+import EditPolygonModal from "../../components/modal/EditPolygonModal";
+import { v4 as uuidv4 } from "uuid";
 
 const AnimatedPolygon = Animated.createAnimatedComponent(Polygon);
 
+export interface Polygon {
+  id: string;
+  name: string;
+  imgPath: string;
+  centerLatLng?: {
+    latitude: number;
+    longitude: number;
+  };
+  distance?: number;
+  initialLatLng?: {
+    latitude: number;
+    longitude: number;
+  };
+  lastLatLng?: {
+    latitude: number;
+    longitude: number;
+  };
+  polygons: {
+    latitude: number;
+    longitude: number;
+  }[];
+}
+
 export default function TabOneScreen() {
   const mapRef = useRef<MapView>(null);
-
-  const initialPolygon = useRef({
-    polygons: [],
-    distance: 0,
-    lastLatLng: undefined,
-    initialLatLng: undefined,
-    centerLatLng: undefined,
-  });
 
   type TTouchPoint = {
     x: number;
     y: number;
   };
 
-  const [isActiveDraw, setDrawMode] = useState<boolean>(false);
-  const [polygon, setPolygon] = useState<any>(initialPolygon.current);
+  const [polygons, setPolygons] = useState<Polygon[]>([]);
   const [isReady, setIsReady] = useState<boolean>(false);
   const [points, setPoints] = useState<TTouchPoint[]>([]);
+  const [isActiveDraw, setDrawMode] = useState<boolean>(false);
+  const [openModalId, setOpenModalId] = useState<string>("");
+  const [currentPolygonId, setCurrentPolygonId] = useState<string>("");
 
-  const handleMapReady = useCallback(
-    () => mapRef.current && setIsReady(true),
-    []
-  );
+  const handleMapReady = useCallback(() => {
+    mapRef.current && setIsReady(true);
+  }, []);
 
   const convertByPoint = async (item: any) =>
     await mapRef.current?.coordinateForPoint(item);
 
-  const handleRemovePolygon = (): void => setPolygon(initialPolygon.current);
-
-  const handleCanvasEndDraw = useCallback((locations: any) => {
-    setPolygon(locations);
-    setDrawMode(false);
-  }, []);
-
-  const handlePolygon = useCallback(
-    (_: any, index: number) => (
-      <AnimatedPolygon
-        key={index}
-        coordinates={polygon.polygons}
-        fillColor="rgba(255, 171, 171, 0.01)"
-        strokeColor="rgba(255, 171, 171, 0.88)"
-        strokeWidth={1}
-      />
-    ),
-    [polygon.polygons]
+  const handleCanvasEndDraw = useCallback(
+    (locations: any) => {
+      const closedPolygon = {
+        id: uuidv4(), // Generate a unique ID (you may need to install a library like uuid for this)
+        name: "Polygon Name", // Set a default name or prompt the user for input
+        imgPath: "path/to/image", // Set a default image path or prompt the user for input
+        ...locations,
+        polygons: [...locations.polygons, locations.polygons[0]],
+      };
+      setCurrentPolygonId(closedPolygon.id);
+      setOpenModalId("modal");
+      setPolygons([...polygons, closedPolygon]);
+      setDrawMode(false);
+    },
+    [polygons]
   );
 
   const isVisiblePolygons = useMemo(
-    () => isReady && polygon.polygons && polygon.polygons.length > 0,
-    [isReady, polygon.polygons]
+    () => isReady && polygons && polygons.length > 0,
+    [isReady, polygons]
   );
 
-  console.log("polygon", polygon);
+  console.log("polygons", JSON.stringify(polygons));
 
   return (
     <SafeAreaView style={styles.container}>
-      <MapView ref={mapRef} style={styles.map} onMapReady={handleMapReady}>
-        {isVisiblePolygons && (
-          <>
-            {polygon.centerLatLng && (
-              <Marker
-                onPress={handleRemovePolygon}
-                coordinate={polygon.centerLatLng}
-              >
-                <View style={styles.card}>
-                  <Image
-                    source={require("../../assets/images/location.png")}
-                    resizeMode={"stretch"}
-                    style={styles.img}
-                  />
-                </View>
-              </Marker>
-            )}
-            {polygon.polygons.map(handlePolygon)}
-          </>
+      <View style={{ flex: 1 }}>
+        <MapView ref={mapRef} style={styles.map} onMapReady={handleMapReady}>
+          {isVisiblePolygons &&
+            polygons.map((polygon, index) => (
+              <React.Fragment key={index}>
+                {polygon.centerLatLng && (
+                  <Marker
+                    onPress={() => {
+                      setOpenModalId("modal");
+                      setCurrentPolygonId(polygon.id);
+                    }}
+                    coordinate={polygon.centerLatLng}
+                  >
+                    <View style={styles.card}>
+                      <Image
+                        source={require("../../assets/images/location.png")}
+                        resizeMode={"stretch"}
+                        style={styles.img}
+                      />
+                    </View>
+                  </Marker>
+                )}
+                <AnimatedPolygon
+                  coordinates={polygon.polygons}
+                  fillColor="rgba(255, 171, 171, 0.5)"
+                  strokeColor="rgba(255, 171, 171, 0.88)"
+                  strokeWidth={1}
+                />
+              </React.Fragment>
+            ))}
+        </MapView>
+
+        {isActiveDraw && (
+          <MapViewGestures
+            points={points}
+            widthLine={3}
+            colorLine={"green"}
+            onEndDraw={handleCanvasEndDraw}
+            onChangePoints={setPoints}
+            backgroundCanvas={"rgba(0, 0, 0, 0.0)"}
+            convertByPoint={convertByPoint}
+          />
         )}
-      </MapView>
-
-      {isActiveDraw && (
-        <MapViewGestures
-          points={points}
-          widthLine={3}
-          colorLine={"green"}
-          onEndDraw={handleCanvasEndDraw}
-          onChangePoints={setPoints}
-          backgroundCanvas={"rgba(0, 0, 0, 0.0)"}
-          convertByPoint={convertByPoint}
-        />
-      )}
-
+      </View>
       <View style={styles.panel}>
         <Text style={styles.title}>Menu</Text>
         <View
@@ -118,13 +142,20 @@ export default function TabOneScreen() {
             enabled={isActiveDraw}
             title={"Draw Area"}
             onTap={() => {
-              setPolygon(initialPolygon.current);
               setPoints([]);
-              setDrawMode(true);
+              setDrawMode(!isActiveDraw);
             }}
           />
         </View>
       </View>
+      <EditPolygonModal
+        id={"modal"}
+        openModalId={openModalId}
+        setOpenModalId={setOpenModalId}
+        polygons={polygons}
+        setPolygons={setPolygons}
+        currentPolygonId={currentPolygonId}
+      />
     </SafeAreaView>
   );
 }
