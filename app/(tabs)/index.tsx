@@ -82,8 +82,6 @@ export default function TabOneScreen() {
     [isReady, polygons]
   );
 
-  console.log("polygons", JSON.stringify(polygons));
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flex: 1 }}>
