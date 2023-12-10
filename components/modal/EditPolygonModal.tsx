@@ -151,12 +151,24 @@ const EditPolygonModal = ({
           />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        style={styles.dangerButton}
-        onPress={handleRemovePolygon}
+      <View
+        style={{
+          flexDirection: "row",
+        }}
       >
-        <Text style={styles.dangerButtonText}>Poligon törlése</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.successButton, { marginRight: 12 }]}
+          onPress={() => setOpenModalId("")}
+        >
+          <Text style={styles.buttonText}>Poligon mentése</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.dangerButton]}
+          onPress={handleRemovePolygon}
+        >
+          <Text style={styles.buttonText}>Poligon törlése</Text>
+        </TouchableOpacity>
+      </View>
     </BlurredModal>
   );
 };
@@ -182,7 +194,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#f5737a",
   },
-  dangerButtonText: {
+  buttonText: {
     color: "white",
+  },
+  successButton: {
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: "#59b259",
   },
 });
