@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Button, Text, TextInput, View } from "react-native";
+import { Button, Image, StyleSheet, Text, TextInput, View } from "react-native";
 import BlurredModal from "./BlurredModal";
 import { Polygon } from "../../app/(tabs)";
+import * as ImagePicker from "expo-image-picker";
+import { TouchableOpacity } from "react-native-gesture-handler";
+
+const placeholder = require("../../assets/images/placeholder.png");
 
 interface EditPolygonModalProps {
   id: string;
@@ -64,6 +68,42 @@ const EditPolygonModal = ({
     }
   };
 
+  const takePhoto = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert("Engedélyezd a kamera használatát a beállításokban!");
+      return;
+    }
+
+    let result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      handleImageChange(result.assets[0].uri);
+    }
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      handleImageChange(result.assets[0].uri);
+    }
+  };
+
   return (
     <BlurredModal
       id={id}
@@ -72,32 +112,77 @@ const EditPolygonModal = ({
     >
       <View
         style={{
-          flex: 1,
           width: "100%",
           paddingTop: 32,
         }}
       >
         <Text>id</Text>
-        <TextInput
-          style={{ borderColor: "grey", borderWidth: 1, marginBottom: 24 }}
-          value={currentPolygon?.id || ""}
-        />
+        <TextInput style={styles.input} value={currentPolygon?.id || ""} />
         <Text>Terület neve</Text>
         <TextInput
-          style={{ borderColor: "grey", borderWidth: 1, marginBottom: 24 }}
+          style={styles.input}
           value={currentPolygon?.name || ""}
           onChangeText={handleNameChange}
         />
-        <Text>Kép</Text>
-        <TextInput
-          style={{ borderColor: "grey", borderWidth: 1, marginBottom: 32 }}
-          value={currentPolygon?.imgPath || ""}
-          onChangeText={handleImageChange}
-        />
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
+        >
+          <Text>Kép</Text>
+          <TouchableOpacity onPress={() => handleImageChange("")}>
+            <Text style={{ color: "#f5737a" }}>Kép törlése</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          onPress={() => pickImage()}
+          style={{ marginBottom: 12 }}
+        >
+          <Image
+            source={
+              currentPolygon?.imgPath
+                ? { uri: currentPolygon?.imgPath }
+                : placeholder
+            }
+            style={styles.image}
+          />
+        </TouchableOpacity>
       </View>
-      <Button title="Remove Polygon" onPress={handleRemovePolygon} />
+      <TouchableOpacity
+        style={styles.dangerButton}
+        onPress={handleRemovePolygon}
+      >
+        <Text style={styles.dangerButtonText}>Poligon törlése</Text>
+      </TouchableOpacity>
     </BlurredModal>
   );
 };
 
 export default EditPolygonModal;
+
+const styles = StyleSheet.create({
+  image: {
+    resizeMode: "contain",
+    height: 200,
+    width: "100%",
+  },
+  input: {
+    fontSize: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderColor: "grey",
+    borderWidth: 1,
+    marginBottom: 24,
+  },
+  dangerButton: {
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: "#f5737a",
+  },
+  dangerButtonText: {
+    color: "white",
+  },
+});

@@ -65,7 +65,7 @@ export default function TabOneScreen() {
       const closedPolygon = {
         id: uuidv4(), // Generate a unique ID (you may need to install a library like uuid for this)
         name: "Polygon Name", // Set a default name or prompt the user for input
-        imgPath: "path/to/image", // Set a default image path or prompt the user for input
+        imgPath: "", // Set a default image path or prompt the user for input
         ...locations,
         polygons: [...locations.polygons, locations.polygons[0]],
       };
