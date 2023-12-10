@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+  useEffect,
+} from "react";
 import {
   StyleSheet,
   Animated,
@@ -14,6 +20,7 @@ import EditPolygonModal from "../../components/modal/EditPolygonModal";
 import { v4 as uuidv4 } from "uuid";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import * as Location from "expo-location";
 
 const AnimatedPolygon = Animated.createAnimatedComponent(Polygon);
 
@@ -47,6 +54,31 @@ export default function TabOneScreen() {
     x: number;
     y: number;
   };
+
+  const [location, setLocation] = useState<Location.LocationObject | null>(
+    null
+  );
+  const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+
+  let text = "Waiting..";
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
+  }
 
   const [polygons, setPolygons] = useState<Polygon[]>([]);
   const [isReady, setIsReady] = useState<boolean>(false);
@@ -106,37 +138,50 @@ export default function TabOneScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flex: 1 }}>
-        <MapView ref={mapRef} style={styles.map} onMapReady={handleMapReady}>
-          {isVisiblePolygons &&
-            polygons.map((polygon, index) => (
-              <React.Fragment key={index}>
-                {polygon.centerLatLng && (
-                  <Marker
-                    onPress={() => {
-                      setOpenModalId("modal");
-                      setCurrentPolygonId(polygon.id);
-                    }}
-                    coordinate={polygon.centerLatLng}
-                  >
-                    <View style={styles.card}>
-                      <Image
-                        source={require("../../assets/images/location.png")}
-                        resizeMode={"stretch"}
-                        style={styles.img}
-                      />
-                    </View>
-                  </Marker>
-                )}
-                <AnimatedPolygon
-                  coordinates={polygon.polygons}
-                  fillColor="rgba(255, 171, 171, 0.5)"
-                  strokeColor="rgba(255, 171, 171, 0.88)"
-                  strokeWidth={1}
-                />
-              </React.Fragment>
-            ))}
-        </MapView>
-
+        {location ? (
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            onMapReady={handleMapReady}
+            initialRegion={{
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+              latitudeDelta: 0.00122,
+              longitudeDelta: 0.00121,
+            }}
+          >
+            {isVisiblePolygons &&
+              polygons.map((polygon, index) => (
+                <React.Fragment key={index}>
+                  {polygon.centerLatLng && (
+                    <Marker
+                      onPress={() => {
+                        setOpenModalId("modal");
+                        setCurrentPolygonId(polygon.id);
+                      }}
+                      coordinate={polygon.centerLatLng}
+                    >
+                      <View style={styles.card}>
+                        <Image
+                          source={require("../../assets/images/location.png")}
+                          resizeMode={"stretch"}
+                          style={styles.img}
+                        />
+                      </View>
+                    </Marker>
+                  )}
+                  <AnimatedPolygon
+                    coordinates={polygon.polygons}
+                    fillColor="rgba(255, 171, 171, 0.5)"
+                    strokeColor="rgba(255, 171, 171, 0.88)"
+                    strokeWidth={1}
+                  />
+                </React.Fragment>
+              ))}
+          </MapView>
+        ) : (
+          <Text>Loading...</Text>
+        )}
         {isActiveDraw && (
           <MapViewGestures
             points={points}
@@ -164,7 +209,9 @@ export default function TabOneScreen() {
               setPoints([]);
               setDrawMode(!isActiveDraw);
             }}
-            onTapDownload={() => downloadJsonFile()}
+            onTapDownload={
+              polygons.length > 0 ? () => downloadJsonFile() : undefined
+            }
           />
         </View>
       </View>

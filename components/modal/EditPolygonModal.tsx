@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Image, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, StyleSheet, Text, TextInput, View } from "react-native";
 import BlurredModal from "./BlurredModal";
 import { Polygon } from "../../app/(tabs)";
 import * as ImagePicker from "expo-image-picker";
@@ -157,16 +157,16 @@ const EditPolygonModal = ({
         }}
       >
         <TouchableOpacity
-          style={[styles.successButton, { marginRight: 12 }]}
-          onPress={() => setOpenModalId("")}
-        >
-          <Text style={styles.buttonText}>Poligon mentése</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.dangerButton]}
+          style={[styles.dangerButton, { marginRight: 12 }]}
           onPress={handleRemovePolygon}
         >
           <Text style={styles.buttonText}>Poligon törlése</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.successButton]}
+          onPress={() => setOpenModalId("")}
+        >
+          <Text style={styles.buttonText}>Poligon mentése</Text>
         </TouchableOpacity>
       </View>
     </BlurredModal>
