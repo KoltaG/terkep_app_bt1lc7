@@ -12,6 +12,8 @@ import MapView, { Polygon, Marker } from "react-native-maps";
 import MenuCard from "../../components/menuCard";
 import EditPolygonModal from "../../components/modal/EditPolygonModal";
 import { v4 as uuidv4 } from "uuid";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 const AnimatedPolygon = Animated.createAnimatedComponent(Polygon);
 
@@ -82,6 +84,25 @@ export default function TabOneScreen() {
     [isReady, polygons]
   );
 
+  const timestamp = Date.now();
+
+  const downloadJsonFile = async () => {
+    try {
+      const jsonContent = JSON.stringify(polygons, null, 2); // Convert object to JSON string with formatting
+
+      const fileUri = `${FileSystem.documentDirectory}poligons-${timestamp}.json`;
+
+      await FileSystem.writeAsStringAsync(fileUri, jsonContent, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+
+      // Open the file for the user to share or view
+      await Sharing.shareAsync(fileUri);
+    } catch (error) {
+      console.error("Error downloading JSON file:", error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flex: 1 }}>
@@ -138,11 +159,12 @@ export default function TabOneScreen() {
         >
           <MenuCard
             enabled={isActiveDraw}
-            title={"Draw Area"}
+            title={"Hozzáadás"}
             onTap={() => {
               setPoints([]);
               setDrawMode(!isActiveDraw);
             }}
+            onTapDownload={() => downloadJsonFile()}
           />
         </View>
       </View>

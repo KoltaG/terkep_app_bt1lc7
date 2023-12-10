@@ -5,28 +5,56 @@ export type TMenuCard = {
   enabled: boolean;
   title: string;
   onTap: () => void;
+  onTapDownload: () => void;
 };
-const MenuCard: FC<TMenuCard> = ({ title, onTap, enabled }) => {
+const MenuCard: FC<TMenuCard> = ({ title, onTap, onTapDownload, enabled }) => {
   return (
-    <TouchableOpacity style={styles.button} onPress={onTap}>
-      <View
-        style={{
-          backgroundColor: enabled ? "green" : "orange",
-          height: 40,
-          width: 40,
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: 16,
-        }}
-      >
-        <Image
-          source={require("../../assets/images/palette.png")}
-          resizeMode={"stretch"}
-          style={styles.img}
-        />
-      </View>
-      <Text style={styles.title}>{title}</Text>
-    </TouchableOpacity>
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-evenly",
+        width: "100%",
+      }}
+    >
+      <TouchableOpacity style={styles.button} onPress={onTap}>
+        <View
+          style={{
+            backgroundColor: enabled ? "green" : "orange",
+            height: 40,
+            width: 40,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 16,
+          }}
+        >
+          <Image
+            source={require("../../assets/images/palette.png")}
+            resizeMode={"stretch"}
+            style={styles.img}
+          />
+        </View>
+        <Text style={styles.title}>{title}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={onTapDownload}>
+        <View
+          style={{
+            backgroundColor: "orange",
+            height: 40,
+            width: 40,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 16,
+          }}
+        >
+          <Image
+            source={require("../../assets/images/palette.png")}
+            resizeMode={"stretch"}
+            style={styles.img}
+          />
+        </View>
+        <Text style={styles.title}>Letöltés</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
