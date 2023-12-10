@@ -180,7 +180,7 @@ export default function TabOneScreen() {
               ))}
           </MapView>
         ) : (
-          <Text>Loading...</Text>
+          <Text>Betöltés...</Text>
         )}
         {isActiveDraw && (
           <MapViewGestures
