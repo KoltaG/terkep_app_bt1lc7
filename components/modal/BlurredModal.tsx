@@ -66,7 +66,7 @@ export default function BlurredModal({
               }}
             >
               <View>
-                <Text>Close</Text>
+                <Text>X</Text>
               </View>
             </TouchableOpacity>
             {children}

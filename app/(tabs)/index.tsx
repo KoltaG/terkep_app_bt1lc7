@@ -195,7 +195,6 @@ export default function TabOneScreen() {
         )}
       </View>
       <View style={styles.panel}>
-        <Text style={styles.title}>Menu</Text>
         <View
           style={{
             flexDirection: "row",

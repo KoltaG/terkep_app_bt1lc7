@@ -138,7 +138,7 @@ const EditPolygonModal = ({
         </View>
 
         <TouchableOpacity
-          onPress={() => pickImage()}
+          onPress={() => takePhoto()}
           style={{ marginBottom: 12 }}
         >
           <Image
