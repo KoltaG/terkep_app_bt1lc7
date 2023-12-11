@@ -48,7 +48,7 @@ const MenuCard: FC<TMenuCard> = ({ title, onTap, onTapDownload, enabled }) => {
             }}
           >
             <Image
-              source={require("../../assets/images/palette.png")}
+              source={require("../../assets/images/download.png")}
               resizeMode={"stretch"}
               style={styles.img}
             />
